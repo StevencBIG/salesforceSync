@@ -35,6 +35,7 @@
   <classpathentry kind="var" path="M2_REPO/org/eclipse/jetty/jetty-util/9.2.20.v20161216/jetty-util-9.2.20.v20161216.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/eclipse/jetty/jetty-util-ajax/9.2.18.v20160721/jetty-util-ajax-9.2.18.v20160721.jar"/>
   <classpathentry kind="var" path="M2_REPO/joda-time/joda-time/2.2/joda-time-2.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/microsoft/sqlserver/mssql-jdbc/6.3.4.jre8-preview/mssql-jdbc-6.3.4.jre8-preview.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/mule/tools/devkit/mule-devkit-shade/3.9.3/mule-devkit-shade-3.9.3.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/mule/modules/mule-module-sfdc/8.5.0/mule-module-sfdc-8.5.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/ca/juliusdavies/not-yet-commons-ssl/0.3.9/not-yet-commons-ssl-0.3.9.jar"/>

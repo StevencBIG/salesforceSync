@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db"  xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db"  xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
@@ -16,36 +16,29 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
             <batch:step name="Batch_Step">
                 <logger doc:name="Log each account" level="INFO" message="Account recently modified: #[payload]"/>
             </batch:step>
-            <dw:transform-message doc:name="Copy_of_Transform Message" metadata:id="6475bcd0-67af-47e2-b988-c31e09917c9f">
-                <dw:set-payload><![CDATA[%dw 1.0
+            <batch:step name="Batch_Step1">
+                <dw:transform-message doc:name="Transform Message" metadata:id="9a9215a3-80c4-450d-ab39-d3c2574d1c10">
+                    <dw:input-payload mimeType="application/java"/>
+                    <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
 ---
 {
 	Id: flowVars.id,
-	CompanyName: payload.AccountName,
-	BillingState: payload.State,
+	CompanyName:  payload.Name,
+	BillingState: payload.BillingState,
 	Phone: payload.Phone,
 	Fax: payload.Fax,
 	Industry: payload.Industry,
 	Description: payload.Description
 }]]></dw:set-payload>
-                <dw:set-variable variableName="hold_payload"><![CDATA[%dw 1.0
-%output application/java
----
-[{
-	Name: payload.AccountName,
-	ParentId: payload.ParentAccount,
-	BillingState: payload.State,
-	Phone: payload.Phone,
-	Fax: payload.Fax,
-	Industry: payload.Industry,
-	Description: payload.Description
-}]]]></dw:set-variable>
-            </dw:transform-message>
-            <db:insert config-ref="Generic_Database_Configuration" doc:name="Copy_of_Copy_of_Mssql">
-                <db:parameterized-query><![CDATA[INSERT INTO Company (CompanyName,ParentAccount,BillingAddress,Phone,Fax,Industry,Description)
-VALUES(#[payload.CompanyName],#[payload.ParentAccount],#[payload.BillingState],#[payload.Phone],#[payload.Fax],#[payload.Industry],#[payload.Description]);]]></db:parameterized-query>
-            </db:insert>
+                </dw:transform-message>
+            </batch:step>
+            <batch:step name="Batch_Step2">
+                <db:insert config-ref="Generic_Database_Configuration" doc:name="Copy_of_Copy_of_Mssql">
+                    <db:parameterized-query><![CDATA[INSERT INTO Company (CompanyName,BillingAddress,Phone,Fax,Industry,Description)
+VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload.Fax],#[payload.Industry],#[payload.Description]);]]></db:parameterized-query>
+                </db:insert>
+            </batch:step>
         </batch:process-records>
     </batch:job>
     <flow name="triggerFlow" processingStrategy="synchronous">
