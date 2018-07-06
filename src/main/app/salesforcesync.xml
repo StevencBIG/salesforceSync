@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule  xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db"  xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
-http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
     <sfdc:config doc:name="Salesforce" name="Salesforce" password="${sfdc.password}" securityToken="${sfdc.securityToken}" username="${sfdc.user}">
     	<sfdc:connection-pooling-profile exhaustedAction="WHEN_EXHAUSTED_GROW" initialisationPolicy="INITIALISE_ONE"/>
     </sfdc:config>
@@ -12,15 +14,45 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:process-records>
             <batch:step name="Batch_Step">
-                <logger doc:name="Log each contact" level="INFO" message="Contact recently modified: #[payload]"/>
+                <logger doc:name="Log each account" level="INFO" message="Account recently modified: #[payload]"/>
             </batch:step>
+            <dw:transform-message doc:name="Copy_of_Transform Message" metadata:id="6475bcd0-67af-47e2-b988-c31e09917c9f">
+                <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+	Id: flowVars.id,
+	CompanyName: payload.AccountName,
+	BillingState: payload.State,
+	Phone: payload.Phone,
+	Fax: payload.Fax,
+	Industry: payload.Industry,
+	Description: payload.Description
+}]]></dw:set-payload>
+                <dw:set-variable variableName="hold_payload"><![CDATA[%dw 1.0
+%output application/java
+---
+[{
+	Name: payload.AccountName,
+	ParentId: payload.ParentAccount,
+	BillingState: payload.State,
+	Phone: payload.Phone,
+	Fax: payload.Fax,
+	Industry: payload.Industry,
+	Description: payload.Description
+}]]]></dw:set-variable>
+            </dw:transform-message>
+            <db:insert config-ref="Generic_Database_Configuration" doc:name="Copy_of_Copy_of_Mssql">
+                <db:parameterized-query><![CDATA[INSERT INTO Company (CompanyName,ParentAccount,BillingAddress,Phone,Fax,Industry,Description)
+VALUES(#[payload.CompanyName],#[payload.ParentAccount],#[payload.BillingState],#[payload.Phone],#[payload.Fax],#[payload.Industry],#[payload.Description]);]]></db:parameterized-query>
+            </db:insert>
         </batch:process-records>
     </batch:job>
     <flow name="triggerFlow" processingStrategy="synchronous">
         <poll doc:name="Poll">
             <fixed-frequency-scheduler frequency="10" timeUnit="SECONDS"/>
-            <watermark default-expression="YESTERDAY" selector="MAX" selector-expression="#[payload.LastModifiedDate]" variable="timestamp"/>
-            <sfdc:query config-ref="Salesforce" doc:name="Query Salesforce every 10 seconds" query="dsql:SELECT Id,Name,LastModifiedDate FROM Contact WHERE LastModifiedDate > #[flowVars['timestamp']]"/>
+            <watermark variable="timestamp" default-expression="YESTERDAY" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
+            <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountNumber,BillingCity,BillingState,Id,Industry,LastModifiedDate,Name,Phone,Website FROM Account WHERE LastModifiedDate &gt; #[flowVars.timestamp]" doc:name="Query Salesforce every 10 seconds"/>
         </poll>
         <batch:execute doc:name="Batch Execute" name="watermarkingBatch"/>
     </flow>

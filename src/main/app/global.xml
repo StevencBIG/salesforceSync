@@ -7,6 +7,5 @@
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-
-   <sfdc:config name="Salesforce__Basic_Authentication" username="${salesforce.username}" password="BitsInGlass2018" securityToken="${salesforce.securityToken}" doc:name="Salesforce: Basic Authentication" url="${salesforce.authorizationURL}"/>
+    <sfdc:config name="Salesforce__Basic_Authentication" username="steven.cisneros@bitsinglass.com" password="BitsInGlass2018" securityToken="M9hfphcWpBcd9yMMnpIciAnQ8" doc:name="Salesforce: Basic Authentication"/>
 </mule>
