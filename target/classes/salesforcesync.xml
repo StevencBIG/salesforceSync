@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db"  xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+<mule xmlns:context="http://www.springframework.org/schema/context" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db"  xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
-http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd">
+    <context:property-placeholder location="salesforcesync-local.properties"/>
     
     <batch:job name="watermarkingBatch">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
+        <batch:input>
+            <poll doc:name="Poll">
+                <fixed-frequency-scheduler frequency="2"/>
+                <watermark variable="timestamp" default-expression="YESTERDAY" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
+                <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountNumber,BillingCity,BillingState,Description,Industry,LastModifiedDate,Name,Phone,Website FROM Account WHERE LastModifiedDate &gt; #[flowVars.timestamp]" doc:name="Query Salesforce"/>
+            </poll>
+        </batch:input>
         <batch:process-records>
-            <batch:step name="Batch_Step">
-                <logger doc:name="Log each account" level="INFO" message="Account recently modified: #[payload]" category="com.mycompany.salesforcesync.watermarkingBatch"/>
+            <batch:step name="Pulling_New_Or_Updated_Account_Info">
+                <logger doc:name="Log each account" level="INFO" message="Account recently modified: #[payload]"/>
             </batch:step>
-            <batch:step name="Batch_Step1">
+            <batch:step name="Required_Field_Checks">
+                <flow-ref name="validationsCheck_subflow" doc:name="Validations check"/>
+            </batch:step>
+            <batch:step name="Formatting_Account_Info">
                 <dw:transform-message doc:name="Transform Message" metadata:id="9a9215a3-80c4-450d-ab39-d3c2574d1c10">
                     <dw:input-payload mimeType="application/java"/>
                     <dw:set-payload><![CDATA[%dw 1.0
@@ -31,29 +43,27 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 }]]></dw:set-payload>
                 </dw:transform-message>
             </batch:step>
-            <batch:step name="Batch_Step2">
+            <batch:step name="Storing_Account_In_DB">
                 <db:insert config-ref="Generic_Database_Configuration" doc:name="Copy_of_Copy_of_Mssql">
                     <db:parameterized-query><![CDATA[INSERT INTO Company (CompanyName,BillingAddress,Phone,Fax,Industry,Description)
 VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload.Fax],#[payload.Industry],#[payload.Description]);]]></db:parameterized-query>
                 </db:insert>
             </batch:step>
+            <batch:step name="Track_Metadata">
+                <tracking:custom-event event-name="Account has been updated/added" doc:name="Custom Business Event">
+                    <tracking:meta-data key="Account info" value="#[payload]"/>
+                </tracking:custom-event>
+            </batch:step>
+            <batch:step name="Exceptions" accept-policy="ONLY_FAILURES">
+                <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+            </batch:step>
         </batch:process-records>
-        <batch:on-complete>
-            <tracking:custom-event event-name="Account has been updated/added" doc:name="Custom Business Event">
-                <tracking:meta-data key="Account info" value="#[payload]"/>
-            </tracking:custom-event>
-        </batch:on-complete>
     </batch:job>
-    <flow name="triggerFlow" processingStrategy="synchronous">
-        <poll doc:name="Poll">
-            <fixed-frequency-scheduler frequency="2" timeUnit="SECONDS"/>
-            <watermark variable="timestamp" default-expression="YESTERDAY" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountNumber,BillingCity,BillingState,Description,Industry,LastModifiedDate,Name,Phone,Website FROM Account WHERE LastModifiedDate &gt; #[flowVars.timestamp]" doc:name="Query Salesforce every 2 seconds"/>
-        </poll>
-        <foreach doc:name="For Each">
-            <validation:matches-regex value="#[payload.BillingState]" regex="^[a-zA-Z]+$" doc:name="Validation" message="Billing State can only have letter characters in it"/>
-        </foreach>
-        <batch:execute name="watermarkingBatch" doc:name="watermarkingBatch"/>
-    </flow>
-    <catch-exception-strategy name="salesforcesyncCatch_Exception_Strategy"/>
+    <sub-flow name="validationsCheck_subflow">
+        <validation:matches-regex message="Company Name has a unknown character " value="#[payload.Name]" regex="^[a-zA-Z0-9\&quot;\'\!\s]+$" doc:name="Check Company Name "/>
+        <validation:matches-regex message="Billing State contains a character that is not a letter " value="#[payload.BillingState]" regex="^[a-zA-Z]+$" doc:name="Check Company Billing State"/>
+        <validation:matches-regex message="Phone number contains non numeric characters " value="#[payload.Phone]" regex="^[a-zA-Z0-9\(\)\-\s]+$" doc:name="Checking Company Phone Number "/>
+        <validation:matches-regex message="Company Industry has non Alphabetical characters " value="#[payload.Industry]" regex="^[a-zA-Z]+$" doc:name="Checking Company Industry"/>
+        <validation:matches-regex message="Company Description contains invalid characters " value="#[payload.Description]" regex="^[a-zA-Z0-9\&quot;\'\!\s]+$" doc:name="Checking Company Description"/>
+    </sub-flow>
 </mule>
