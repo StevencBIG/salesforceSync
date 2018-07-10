@@ -46,10 +46,13 @@ VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload
     </batch:job>
     <flow name="triggerFlow" processingStrategy="synchronous">
         <poll doc:name="Poll">
-            <fixed-frequency-scheduler frequency="10" timeUnit="SECONDS"/>
+            <fixed-frequency-scheduler frequency="2" timeUnit="SECONDS"/>
             <watermark variable="timestamp" default-expression="YESTERDAY" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountNumber,BillingCity,BillingState,Description,Industry,LastModifiedDate,Name,Phone,Website FROM Account WHERE LastModifiedDate &gt; #[flowVars.timestamp]" doc:name="Query Salesforce every 10 seconds"/>
+            <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountNumber,BillingCity,BillingState,Description,Industry,LastModifiedDate,Name,Phone,Website FROM Account WHERE LastModifiedDate &gt; #[flowVars.timestamp]" doc:name="Query Salesforce every 2 seconds"/>
         </poll>
-        <batch:execute doc:name="watermarkingBatch" name="watermarkingBatch"/>
+        <foreach doc:name="For Each">
+            <validation:matches-regex value="#[payload.BillingState]" regex="^[a-zA-Z]+$" doc:name="Validation" message="Billing State can only have letter characters in it"/>
+        </foreach>
+        <batch:execute name="watermarkingBatch" doc:name="watermarkingBatch"/>
     </flow>
 </mule>
