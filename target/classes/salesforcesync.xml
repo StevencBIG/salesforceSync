@@ -12,7 +12,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:process-records>
             <batch:step name="Batch_Step">
-                <logger doc:name="Log each account" level="INFO" message="Account recently modified: #[payload]"/>
+                <logger doc:name="Log each account" level="INFO" message="Account recently modified: #[payload]" category="com.mycompany.salesforcesync.watermarkingBatch"/>
             </batch:step>
             <batch:step name="Batch_Step1">
                 <dw:transform-message doc:name="Transform Message" metadata:id="9a9215a3-80c4-450d-ab39-d3c2574d1c10">
@@ -55,4 +55,5 @@ VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload
         </foreach>
         <batch:execute name="watermarkingBatch" doc:name="watermarkingBatch"/>
     </flow>
+    <catch-exception-strategy name="salesforcesyncCatch_Exception_Strategy"/>
 </mule>
