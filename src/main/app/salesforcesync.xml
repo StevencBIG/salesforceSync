@@ -10,11 +10,11 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd">
     <context:property-placeholder location="salesforcesync-local.properties"/>
     
-    <batch:job name="watermarkingBatch">
+    <batch:job name="watermarkingBatch" max-failed-records="-1">
         <batch:threading-profile poolExhaustedAction="WAIT"/>
         <batch:input>
             <poll doc:name="Poll">
-                <fixed-frequency-scheduler frequency="2"/>
+                <fixed-frequency-scheduler frequency="${polling.frequency}"/>
                 <watermark variable="timestamp" default-expression="YESTERDAY" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
                 <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountNumber,BillingCity,BillingState,Description,Industry,LastModifiedDate,Name,Phone,Website FROM Account WHERE LastModifiedDate &gt; #[flowVars.timestamp]" doc:name="Query Salesforce"/>
             </poll>
@@ -37,25 +37,36 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 	CompanyName: payload.Name,
 	BillingState: payload.BillingState,
 	Phone: payload.Phone,
+	Website: payload.Website,
 	Fax: payload.Fax,
 	Industry: payload.Industry,
-	Description:payload.Description
+	Description: payload.Description
 }]]></dw:set-payload>
                 </dw:transform-message>
             </batch:step>
             <batch:step name="Storing_Account_In_DB">
                 <db:insert config-ref="Generic_Database_Configuration" doc:name="Copy_of_Copy_of_Mssql">
-                    <db:parameterized-query><![CDATA[INSERT INTO Company (CompanyName,BillingAddress,Phone,Fax,Industry,Description)
-VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload.Fax],#[payload.Industry],#[payload.Description]);]]></db:parameterized-query>
+                    <db:parameterized-query><![CDATA[INSERT INTO Company (CompanyName,BillingAddress,Phone,Fax,Industry,Description,Website)
+VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload.Fax],#[payload.Industry],#[payload.Description],#[payload.Website]);]]></db:parameterized-query>
                 </db:insert>
             </batch:step>
             <batch:step name="Track_Metadata">
                 <tracking:custom-event event-name="Account has been updated/added" doc:name="Custom Business Event">
+                    <tracking:meta-data key="AccountNumber" value="#[message.payload.AccountNumber]"/>
                     <tracking:meta-data key="Account info" value="#[payload]"/>
                 </tracking:custom-event>
             </batch:step>
             <batch:step name="Exceptions" accept-policy="ONLY_FAILURES">
-                <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+                <logger message="#[payload]" level="ERROR" doc:name="Logger"/>
+                <tracking:custom-event event-name="Failed Accounts to process " doc:name="Custom Business Event">
+                    <tracking:meta-data key="CompanyDescription" value="#[message.payload.Description]"/>
+                    <tracking:meta-data key="CompanyBillState" value="#[message.payload.BillingState]"/>
+                    <tracking:meta-data key="CompanyName" value="#[message.payload.Name]"/>
+                    <tracking:meta-data key="CompanyIndustry" value="#[message.payload.Industry]"/>
+                    <tracking:meta-data key="Payload_Id" value="#[payload.Id]"/>
+                    <tracking:meta-data key="CompanyPhone" value="#[message.payload.Phone]"/>
+                    <tracking:meta-data key="CompanyWebsite" value="#[message.payload.Website]"/>
+                </tracking:custom-event>
             </batch:step>
         </batch:process-records>
     </batch:job>
@@ -65,5 +76,6 @@ VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload
         <validation:matches-regex message="Phone number contains non numeric characters " value="#[payload.Phone]" regex="^[a-zA-Z0-9\(\)\-\s]+$" doc:name="Checking Company Phone Number "/>
         <validation:matches-regex message="Company Industry has non Alphabetical characters " value="#[payload.Industry]" regex="^[a-zA-Z]+$" doc:name="Checking Company Industry"/>
         <validation:matches-regex message="Company Description contains invalid characters " value="#[payload.Description]" regex="^[a-zA-Z0-9\&quot;\'\!\s]+$" doc:name="Checking Company Description"/>
+        <validation:matches-regex message="Website is invalid " value="#[payload.Website]" regex="^[(https?|ftp|file)://[-a-zA-Z0-9+&amp;@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&amp;@#/%=~_|]]+$" doc:name="Checking Company Website"/>
     </sub-flow>
 </mule>
