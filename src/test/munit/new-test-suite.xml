@@ -11,23 +11,31 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
         <spring:import resource="classpath:global.xml"/>
         <spring:import resource="classpath:salesforcesync.xml"/>
     </spring:beans>
-    <munit:test name="new-test-suite-watermarkingBatchTest" description="Test">
+    <munit:test name="new-test-suite-watermarkingBatchTest" description="Test" ignore="true">
         <batch:execute name="watermarkingBatch" doc:name="Run Batch watermarkingBatch"/>
     </munit:test>
     <munit:test name="new-test-suite-validationsCheck_subflowTest" description="Test">
-        <set-payload value="#[
-{
-&quot;AccountName&quot;: &quot;Bits In Glass&quot;,
-&quot;ParentAccount&quot;: &quot; &quot;,
+        <set-payload value="{
+&quot;Name&quot;: &quot;Big&quot;,
 &quot;Phone&quot;: &quot;303-111-0101&quot;,
 &quot;Fax&quot;: &quot;303-112-0102&quot;,
 &quot;Industry&quot;: &quot;Technology&quot;,
-&quot;State&quot;: &quot;CO&quot;,
-&quot;Description&quot;: &quot;Bits in Glass 2.0 is a fork from the original Bits in Glass, where we focus on newer programming languages&quot;
+&quot;BillingState&quot;: &quot;CO&quot;,
+&quot;Description&quot;: &quot;Bits test&quot;,
+&quot;Website&quot;: &quot;www.bits.com&quot;
 }
-]
-" doc:name="Set Payload"/>
-        <json:json-to-object-transformer doc:name="JSON to Object"/>
+" doc:name="Set Payload" mimeType="application/json"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
         <flow-ref name="validationsCheck_subflow" doc:name="Flow-ref to validationsCheck_subflow"/>
+        <munit:assert-not-null message="Test suceeeded with full payload" doc:name="Assert Not Null Payload"/>
+    </munit:test>
+    <munit:test name="CompanyName_pass_subflowTest" description="Test">
+        <set-payload value="{
+&quot;Name&quot;: &quot;Big&quot;
+}
+" mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="validationsCheck_subflow" doc:name="Copy_of_Flow-ref to validationsCheck_subflow"/>
+        <munit:assert-not-null message="Test suceeeded with full payload" doc:name="Copy_of_Assert Not Null Payload"/>
     </munit:test>
 </mule>

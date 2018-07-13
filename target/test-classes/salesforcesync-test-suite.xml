@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <munit:config name="munit" doc:name="MUnit configuration"/>
+    <spring:beans>
+        <spring:import resource="classpath:global.xml"/>
+        <spring:import resource="classpath:salesforcesync.xml"/>
+    </spring:beans>
+    <munit:test name="salesforcesync-test-suite-watermarkingBatchTest" description="Test" ignore="true">
+        <batch:execute name="watermarkingBatch" doc:name="Run Batch watermarkingBatch"/>
+    </munit:test>
+    <munit:test name="salesforcesync-test-suite-validationsCheck_subflowTest" description="Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big&quot;, &quot;Phone&quot;: &quot;303-111-0101&quot;, &quot;Fax&quot;: &quot;303-112-0102&quot;, &quot;Industry&quot;: &quot;Technology&quot;, &quot;BillingState&quot;: &quot;CO&quot;, &quot;Description&quot;: &quot;Bits test&quot;, &quot;Website&quot;: &quot;www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="validationsCheck_subflow" doc:name="Flow-ref to validationsCheck_subflow"/>
+    </munit:test>
+    <munit:test name="salesforcesync-test-suite-CheckingCompanyIndustry_Sub_FlowTest" description="Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big&quot;, &quot;Phone&quot;: &quot;303-111-0101&quot;, &quot;Fax&quot;: &quot;303-112-0102&quot;, &quot;Industry&quot;: &quot;Technology&quot;, &quot;BillingState&quot;: &quot;CO&quot;, &quot;Description&quot;: &quot;Bits test&quot;, &quot;Website&quot;: &quot;www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckingCompanyIndustry_Sub_Flow" doc:name="Flow-ref to CheckingCompanyIndustry_Sub_Flow"/>
+    </munit:test>
+    <munit:test name="salesforcesync-test-suite-CheckingCompanyWebsite_Sub_FlowTest" description="Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big&quot;, &quot;Phone&quot;: &quot;303-111-0101&quot;, &quot;Fax&quot;: &quot;303-112-0102&quot;, &quot;Industry&quot;: &quot;Technology&quot;, &quot;BillingState&quot;: &quot;CO&quot;, &quot;Description&quot;: &quot;Bits test&quot;, &quot;Website&quot;: &quot;www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckingCompanyWebsite_Sub_Flow" doc:name="Flow-ref to CheckingCompanyWebsite_Sub_Flow"/>
+    </munit:test>
+    <munit:test name="salesforcesync-test-suite-CheckingCompanyDescription_Sub_FlowTest" description="Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big&quot;, &quot;Phone&quot;: &quot;303-111-0101&quot;, &quot;Fax&quot;: &quot;303-112-0102&quot;, &quot;Industry&quot;: &quot;Technology&quot;, &quot;BillingState&quot;: &quot;CO&quot;, &quot;Description&quot;: &quot;Bits test&quot;, &quot;Website&quot;: &quot;www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckingCompanyDescription_Sub_Flow" doc:name="Flow-ref to CheckingCompanyDescription_Sub_Flow"/>
+    </munit:test>
+    <munit:test name="salesforcesync-test-suite-CheckCompanyName_Sub_FlowTest" description="Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big&quot;, &quot;Phone&quot;: &quot;303-111-0101&quot;, &quot;Fax&quot;: &quot;303-112-0102&quot;, &quot;Industry&quot;: &quot;Technology&quot;, &quot;BillingState&quot;: &quot;CO&quot;, &quot;Description&quot;: &quot;Bits test&quot;, &quot;Website&quot;: &quot;www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckCompanyName_Sub_Flow" doc:name="Flow-ref to CheckCompanyName_Sub_Flow"/>
+    </munit:test>
+    <munit:test name="salesforcesync-test-suite-CheckCompanyBillingState_Sub_FlowTest" description="Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big&quot;, &quot;Phone&quot;: &quot;303-111-0101&quot;, &quot;Fax&quot;: &quot;303-112-0102&quot;, &quot;Industry&quot;: &quot;Technology&quot;, &quot;BillingState&quot;: &quot;CO&quot;, &quot;Description&quot;: &quot;Bits test&quot;, &quot;Website&quot;: &quot;www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckCompanyBillingState_Sub_Flow" doc:name="Flow-ref to CheckCompanyBillingState_Sub_Flow"/>
+    </munit:test>
+    <munit:test name="salesforcesync-test-suite-CheckCompanyPhoneNumber_Sub_FlowTest" description="Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big&quot;, &quot;Phone&quot;: &quot;303-111-0101&quot;, &quot;Fax&quot;: &quot;303-112-0102&quot;, &quot;Industry&quot;: &quot;Technology&quot;, &quot;BillingState&quot;: &quot;CO&quot;, &quot;Description&quot;: &quot;Bits test&quot;, &quot;Website&quot;: &quot;www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Set Payload"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckCompanyPhoneNumber_Sub_Flow" doc:name="Flow-ref to CheckCompanyPhoneNumber_Sub_Flow"/>
+    </munit:test>
+    <munit:test name="CompanyName_BadInfo-test-suiteTest" description="MUnit Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Bad Company Info"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <flow-ref name="CheckCompanyName_Sub_Flow" doc:name="Company Name Flow Reference"/>
+    </munit:test>
+    <munit:test name="CompanyDescription_BadInfo-test-suiteTest" description="MUnit Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckingCompanyDescription_Sub_Flow" doc:name="Company Description Flow Reference"/>
+    </munit:test>
+    <munit:test name="CompanyIndustry_BadInfo-test-suiteTest" description="MUnit Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckingCompanyIndustry_Sub_Flow" doc:name="Company Industry Flow Reference"/>
+    </munit:test>
+    <munit:test name="CompanyBillingState_BadInfo-test-suiteTest" description="MUnit Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckCompanyBillingState_Sub_Flow" doc:name="Company Billing State Flow Reference"/>
+    </munit:test>
+    <munit:test name="CompanyPhoneNumber_BadInfo-test-suiteTest" description="MUnit Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckCompanyPhoneNumber_Sub_Flow" doc:name="Company Phone Number Flow Reference"/>
+    </munit:test>
+    <munit:test name="CompanyWebsite_BadInfo-test-suiteTest" description="MUnit Test">
+        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.comz&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
+        <flow-ref name="CheckingCompanyWebsite_Sub_Flow" doc:name="Company Website Flow Reference"/>
+    </munit:test>
+</mule>

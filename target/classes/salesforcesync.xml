@@ -71,11 +71,29 @@ VALUES(#[payload.CompanyName],#[payload.BillingState],#[payload.Phone],#[payload
         </batch:process-records>
     </batch:job>
     <sub-flow name="validationsCheck_subflow">
-        <validation:matches-regex message="Company Name has a unknown character " value="#[payload.Name]" regex="^[a-zA-Z0-9\&quot;\'\!\s]+$" doc:name="Check Company Name "/>
-        <validation:matches-regex message="Billing State contains a character that is not a letter " value="#[payload.BillingState]" regex="^[a-zA-Z]+$" doc:name="Check Company Billing State"/>
-        <validation:matches-regex message="Phone number contains non numeric characters " value="#[payload.Phone]" regex="^[a-zA-Z0-9\(\)\-\s]+$" doc:name="Checking Company Phone Number "/>
+        <flow-ref name="CheckCompanyName_Sub_Flow" doc:name="Check Company Name Flow Reference"/>
+        <flow-ref name="CheckingCompanyDescription_Sub_Flow" doc:name="Checking Company Description Flow Reference"/>
+        <flow-ref name="CheckingCompanyIndustry_Sub_Flow" doc:name="Checking Company Industry Flow Reference"/>
+        <flow-ref name="CheckCompanyBillingState_Sub_Flow" doc:name="Checking Company Billing State Flow Reference"/>
+        <flow-ref name="CheckCompanyPhoneNumber_Sub_Flow" doc:name="Check Company Phone Number Flow Reference"/>
+        <flow-ref name="CheckingCompanyWebsite_Sub_Flow" doc:name="Checking Company Website Flow Reference"/>
+    </sub-flow>
+    <sub-flow name="CheckingCompanyIndustry_Sub_Flow">
         <validation:matches-regex message="Company Industry has non Alphabetical characters " value="#[payload.Industry]" regex="^[a-zA-Z]+$" doc:name="Checking Company Industry"/>
-        <validation:matches-regex message="Company Description contains invalid characters " value="#[payload.Description]" regex="^[a-zA-Z0-9\&quot;\'\!\s]+$" doc:name="Checking Company Description"/>
+    </sub-flow>
+    <sub-flow name="CheckingCompanyWebsite_Sub_Flow">
         <validation:matches-regex message="Website is invalid " value="#[payload.Website]" regex="^[(https?|ftp|file)://[-a-zA-Z0-9+&amp;@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&amp;@#/%=~_|]]+$" doc:name="Checking Company Website"/>
+    </sub-flow>
+    <sub-flow name="CheckingCompanyDescription_Sub_Flow">
+        <validation:matches-regex message="Company Description contains invalid characters " value="#[payload.Description]" regex="^[a-zA-Z0-9\&quot;\'\!\s]+$" doc:name="Checking Company Description"/>
+    </sub-flow>
+    <sub-flow name="CheckCompanyName_Sub_Flow">
+        <validation:matches-regex message="Company Name has a unknown character " value="#[payload.Name]" regex="^[a-zA-Z0-9\&quot;\'\!\s]+$" doc:name="Check Company Name "/>
+    </sub-flow>
+    <sub-flow name="CheckCompanyBillingState_Sub_Flow">
+        <validation:matches-regex message="Billing State contains a character that is not a letter " value="#[payload.BillingState]" regex="^[a-zA-Z]+$" doc:name="Check Company Billing State"/>
+    </sub-flow>
+    <sub-flow name="CheckCompanyPhoneNumber_Sub_Flow">
+        <validation:matches-regex message="Phone number contains non numeric characters " value="#[payload.Phone]" regex="^[a-zA-Z0-9\(\)\-\s]+$" doc:name="Checking Company Phone Number "/>
     </sub-flow>
 </mule>
