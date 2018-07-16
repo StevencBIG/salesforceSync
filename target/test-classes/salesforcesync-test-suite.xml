@@ -48,33 +48,33 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
         <flow-ref name="CheckCompanyPhoneNumber_Sub_Flow" doc:name="Flow-ref to CheckCompanyPhoneNumber_Sub_Flow"/>
     </munit:test>
-    <munit:test name="CompanyName_BadInfo-test-suiteTest" description="MUnit Test">
+    <munit:test name="CompanyName_BadInfo-test-suiteTest" description="MUnit Test" expectException="org.mule.extension.validation.api.ValidationException">
         <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Bad Company Info"/>
         <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
         <flow-ref name="CheckCompanyName_Sub_Flow" doc:name="Company Name Flow Reference"/>
     </munit:test>
-    <munit:test name="CompanyDescription_BadInfo-test-suiteTest" description="MUnit Test">
+    <munit:test name="CompanyDescription_BadInfo-test-suiteTest" description="MUnit Test" expectException="org.mule.extension.validation.api.ValidationException">
         <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
         <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
         <flow-ref name="CheckingCompanyDescription_Sub_Flow" doc:name="Company Description Flow Reference"/>
     </munit:test>
-    <munit:test name="CompanyIndustry_BadInfo-test-suiteTest" description="MUnit Test">
+    <munit:test name="CompanyIndustry_BadInfo-test-suiteTest" description="MUnit Test" expectException="org.mule.extension.validation.api.ValidationException">
         <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
         <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
         <flow-ref name="CheckingCompanyIndustry_Sub_Flow" doc:name="Company Industry Flow Reference"/>
     </munit:test>
-    <munit:test name="CompanyBillingState_BadInfo-test-suiteTest" description="MUnit Test">
+    <munit:test name="CompanyBillingState_BadInfo-test-suiteTest" description="MUnit Test" expectException="org.mule.extension.validation.api.ValidationException">
         <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
         <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
         <flow-ref name="CheckCompanyBillingState_Sub_Flow" doc:name="Company Billing State Flow Reference"/>
     </munit:test>
-    <munit:test name="CompanyPhoneNumber_BadInfo-test-suiteTest" description="MUnit Test">
+    <munit:test name="CompanyPhoneNumber_BadInfo-test-suiteTest" description="MUnit Test" expectException="org.mule.extension.validation.api.ValidationException">
         <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.com&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
         <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
         <flow-ref name="CheckCompanyPhoneNumber_Sub_Flow" doc:name="Company Phone Number Flow Reference"/>
     </munit:test>
     <munit:test name="CompanyWebsite_BadInfo-test-suiteTest" description="MUnit Test">
-        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.comz&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
+        <set-payload value="{ &quot;Name&quot;: &quot;Big.*/&quot;, &quot;Phone&quot;: &quot;!303-111-0101&quot;, &quot;Fax&quot;: &quot;!303-112-0102&quot;, &quot;Industry&quot;: &quot;12Technology&quot;, &quot;BillingState&quot;: &quot;CO1&quot;, &quot;Description&quot;: &quot;Bits test?!.//&quot;, &quot;Website&quot;: &quot;11www.bits.comza&quot; } " mimeType="application/json" doc:name="Copy_of_Bad Company Info"/>
         <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="Copy_of_JSON to Object"/>
         <flow-ref name="CheckingCompanyWebsite_Sub_Flow" doc:name="Company Website Flow Reference"/>
     </munit:test>
